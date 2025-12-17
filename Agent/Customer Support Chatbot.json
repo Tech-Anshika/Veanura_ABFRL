@@ -1,0 +1,818 @@
+{
+  "name": "Customer Support Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=🧠 SYSTEM PROMPT — ABFRL Customer Support, Order Tracking, Complaints & R/E/C Agent\n\nYou are a helpful Customer Support AI Assistant for Aditya Birla Fashion and Retail Ltd. (ABFRL)\nWebsite: https://www.abfrl.com/\n\n🎯 PRIMARY ROLE\n\nYou assist customers with:\n\nOrders, delivery, cancellation, returns, exchanges, refunds\n\nStore details, sizes & product info\n\nOrder Tracking\n\nComplaint Raising & Checking\n\nPolicy-based approvals or rejections\n\nHuman escalation when required\n\nYou are connected to two Google Sheets:\n\n📦 ORDER TRACKING + R/E/C SHEET\n\nGoogle Sheet ID:\n1x_tE_vh2CTmyIqTEO2-cOojnp7a4NI817L7MzK1CFT0\n\nColumns in use:\n\nOrder ID\n\nCustomer Name\n\nCustomer Contact\n\nEmail\n\nOrder Date\n\nExpected Delivery\n\nDelivery Date\n\nOrder Status\n\nReturn/Exchange\n\nReturn Reason\n\nRefund Status\n\nRemarks\n(and all other tracked fields)\n\n✅ ORDER STATUS LOOKUP\n\nWorkflow:\n\nAsk for Order ID\n\nIf unavailable, ask for registered Email or Mobile\n\nFetch matching row from the sheet\n\nReport real data only\n\nExample reply:\n\n“Your order ORD-ABFRL-003 for Van Heusen Joggers (Size L) is currently Out for Delivery, expected by 8 Dec 2025.”\n\nIf data missing:\n\n“I can’t find updated tracking for this order right now. I’m escalating this to our support team.”\n\n🔄 CANCELLATION / RETURN / EXCHANGE HANDLING\n\nAll requests must be verified against the Order Tracking Sheet above before approval.\n\n🚫 ORDER CANCELLATION POLICY\n\n✅ Cancellation allowed ONLY IF:\n\nOrder Status ≠ Dispatched, Out for Delivery, or Delivered\n\n✅ If Eligible:\n\nUpdate same order row:\n\nOrder Status → Cancelled\n\nReturn/Exchange → Cancellation\n\nReturn Reason → customer reason\n\nRefund Status → Initiated\n\nRemarks → \"Cancelled before dispatch\"\n\nReply:\n\n“✅ Your cancellation request has been approved.\nRefund will be sent to your original payment method within 7–10 business days.”\n\n❌ If NOT Eligible:\n\nReply:\n\n“Your order has already been dispatched so cancellation isn’t possible.\nYou can initiate a return after delivery.”\n\n(NO sheet update)\n\n🔁 RETURN POLICY\n\n✅ Return allowed ONLY IF:\n\nRequest is made within 7–15 days from Delivery Date\n\nCustomer confirms:\n\nItem unused\n\nOriginal tags & packaging intact\n\nCategory not excluded from returns\n\n✅ If Eligible:\n\nUpdate order row:\n\nReturn/Exchange → Return\n\nReturn Reason → customer reason\n\nRefund Status → Initiated\n\nRemarks → “Return pickup scheduled”\n\nReply:\n\n“✅ Your return request is approved. Pickup will be arranged shortly.\nRefund will be processed within 7–10 business days after inspection.”\n\n❌ If NOT Eligible:\n\nReply explaining exact rule:\n\n“Sorry, returns are allowed only within 15 days of delivery and require unused items with tags.”\n\n🔄 EXCHANGE POLICY\n\n✅ Exchanges allowed ONLY IF:\n\nWithin 7–15 days of Delivery Date\n\nItems unused with original tags\n\nRequested size/color/variant is available\n\n✅ If Eligible:\n\nUpdate sheet row:\n\nReturn/Exchange → Exchange\n\nReturn Reason → “Size exchange” / “Color change”\n\nRemarks → requested variant details\n\nReply:\n\n“✅ Your exchange request has been approved.\nOur team will confirm availability and arrange pickup.”\n\n❌ If Variant NOT AVAILABLE:\n\nReply:\n\n“The requested item variant is currently unavailable for exchange.\nYou may proceed with a return & refund instead.”\n\n(No row update unless customer confirms return)\n\n💰 REFUND INFORMATION\n\nRefunds are processed within 7–10 business days\n\nAlways refunded to the original payment method\n\n📢 COMPLAINT MANAGEMENT SHEET\n\nGoogle Sheet ID:\n1Nz2ipvGGyeK6fNtT5OXxTc2vxa_EAJEbQJ-jv7j-Zj8\n\n✅ RAISE COMPLAINT\n\nCollect:\n\nCustomer Name\n\nEmail / Mobile\n\nOrder ID\n\nIssue description\n\nAction:\n\n✅ Add new row to complaint sheet\n✅ Generate Complaint ID (ex: COMP-1043)\n\nReply:\n\n“✅ Your complaint has been registered successfully.\nYour Complaint ID is COMP-1043.\nOur team will contact you shortly.”\n\n🔍 CHECK PREVIOUS COMPLAINT\n\nIf customer asks:\n\n“Check complaint”\n\n“Track complaint”\n\n“Previous complaint”\n\n“Status of my complaint”\n\nWorkflow:\n\nAsk for Complaint ID OR Email/Mobile\n\nSearch complaint sheet\n\nRetrieve records\n\nExample reply:\n\n“Your complaint COMP-1003 is currently In Progress and is being reviewed by our team.”\n\nIf multiple exist:\n\n“I found 2 previous complaints under your email. The most recent (COMP-1051) is Resolved.”\n\nIf not found:\n\n“I can’t locate your complaint record. I’ll escalate this to a human support executive.”\n\n🧑‍💼 BEHAVIOR RULES\n\nFriendly, calm & empathetic\n\nUse simple English\n\nAcknowledge frustration before answering\n\nNever guess data\n\nAlways verify using sheets\n\n🚩 HUMAN ESCALATION RULES\n\nEscalate immediately if:\n\nOrder or complaint not found\n\nDelivery disputes (“Delivered but not received”)\n\nRefund delay beyond timeline\n\nPayment disputes or duplicates\n\nComplex approvals\n\nAngry/customers needing supervisors\n\nEscalation message:\n\n“I’m escalating this to our support team so a specialist can assist you personally.”\n\n✅ FINAL OPERATING PRINCIPLES\n\nOnly act based on Google Sheet data\n\nReuse previously shared contact info\n\nNever fabricate order or complaint details\n\nEscalate instead of guessing"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c51c8587-e058-4e28-8028-05d67e7963d6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        160
+      ],
+      "id": "82d705fa-4ea8-4c18-9b39-877a8211ef03",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "jfk8dc2yIJaiD7pz",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        160
+      ],
+      "id": "c28026f4-b5b7-4cca-b1c9-4345acdf1f0f",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets whenever customers asks for order related details. if customer asks for exchange, return or cancellation checks the policies if any of them is valid then let the update sheet of order tracking update the values. If customer is asking for complain dont access this google sheet ",
+        "documentId": {
+          "__rl": true,
+          "value": "1x_tE_vh2CTmyIqTEO2-cOojnp7a4NI817L7MzK1CFT0",
+          "mode": "list",
+          "cachedResultName": "Order tracking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x_tE_vh2CTmyIqTEO2-cOojnp7a4NI817L7MzK1CFT0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x_tE_vh2CTmyIqTEO2-cOojnp7a4NI817L7MzK1CFT0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "=Order ID",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        176
+      ],
+      "id": "754f6d95-861f-4202-a31f-d2f4e17d7665",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZfmOCvPNCurxuJ74",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c228624b-a0a8-48fd-81e9-e3d011cf169e",
+      "name": "Telegram Trigger",
+      "webhookId": "ffa91119-bb2e-436f-9626-d32ac4eeaa7f",
+      "credentials": {
+        "telegramApi": {
+          "id": "bPcQu3YKnfXOHLXq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "72f3f625-2acf-4e29-88ec-a338472595f1",
+      "name": "Send a text message",
+      "webhookId": "bfc80a05-5fe6-4ca4-aaa7-89482fa10334",
+      "credentials": {
+        "telegramApi": {
+          "id": "bPcQu3YKnfXOHLXq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Nz2ipvGGyeK6fNtT5OXxTc2vxa_EAJEbQJ-jv7j-Zj8",
+          "mode": "list",
+          "cachedResultName": "Raise Query",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Nz2ipvGGyeK6fNtT5OXxTc2vxa_EAJEbQJ-jv7j-Zj8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Nz2ipvGGyeK6fNtT5OXxTc2vxa_EAJEbQJ-jv7j-Zj8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Email (Gmail)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Customer_Email__Gmail___using_to_match_', ``, 'string') }}",
+            "Complaint ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Complaint_ID', ``, 'string') }}",
+            "Customer Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Customer_Name', ``, 'string') }}",
+            "Query / Issue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query___Issue', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Customer Email (Gmail)"
+          ],
+          "schema": [
+            {
+              "id": "Complaint ID",
+              "displayName": "Complaint ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Email (Gmail)",
+              "displayName": "Customer Email (Gmail)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Query / Issue",
+              "displayName": "Query / Issue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        624,
+        176
+      ],
+      "id": "5a2aed97-9b40-4310-8001-0a599fb968ec",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZfmOCvPNCurxuJ74",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets whenever customer asks for previous complains",
+        "documentId": {
+          "__rl": true,
+          "value": "1Nz2ipvGGyeK6fNtT5OXxTc2vxa_EAJEbQJ-jv7j-Zj8",
+          "mode": "list",
+          "cachedResultName": "Raise Query",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Nz2ipvGGyeK6fNtT5OXxTc2vxa_EAJEbQJ-jv7j-Zj8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Nz2ipvGGyeK6fNtT5OXxTc2vxa_EAJEbQJ-jv7j-Zj8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        512,
+        176
+      ],
+      "id": "ccce21c8-257e-402f-a04a-8a2a817160c3",
+      "name": "Get row(s) in sheet in Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZfmOCvPNCurxuJ74",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "U r a customer chat support bot ur work is to handle order tracking, handle queries, this is complex cuz there are different sheets available . so please help in it"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        176
+      ],
+      "id": "2dea72b5-deb1-4b16-97b3-94c87a78b634",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets if person want to cancel the order or put a return for the order or wants to exchange the order after checking if policy is valid then do it ",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1x_tE_vh2CTmyIqTEO2-cOojnp7a4NI817L7MzK1CFT0",
+          "mode": "list",
+          "cachedResultName": "Order tracking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x_tE_vh2CTmyIqTEO2-cOojnp7a4NI817L7MzK1CFT0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x_tE_vh2CTmyIqTEO2-cOojnp7a4NI817L7MzK1CFT0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Order_ID__using_to_match_', ``, 'string') }}",
+            "Brand": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Brand', ``, 'string') }}",
+            "Sub Brand/Line": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sub_Brand_Line', ``, 'string') }}",
+            "Channel (Online/Offline)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Channel__Online_Offline_', ``, 'string') }}",
+            "Store Type (EBO/LFS/MBO/E-Com)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Store_Type__EBO_LFS_MBO_E-Com_', ``, 'string') }}",
+            "Store Code": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Store_Code', ``, 'string') }}",
+            "Store Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Store_Name', ``, 'string') }}",
+            "Region/Zone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Region_Zone', ``, 'string') }}",
+            "City": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('City', ``, 'string') }}",
+            "State": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('State', ``, 'string') }}",
+            "Customer Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Customer_Name', ``, 'string') }}",
+            "Customer Contact": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Customer_Contact', ``, 'string') }}",
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+            "Order Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Order_Date', ``, 'string') }}",
+            "Expected Delivery": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Expected_Delivery', ``, 'string') }}",
+            "Delivery Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Delivery_Date', ``, 'string') }}",
+            "Order Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Order_Status', ``, 'string') }}",
+            "Payment Mode": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Payment_Mode', ``, 'string') }}",
+            "Payment Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Payment_Status', ``, 'string') }}",
+            "Style Code": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Style_Code', ``, 'string') }}",
+            "Article Type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Article_Type', ``, 'string') }}",
+            "Fit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Fit', ``, 'string') }}",
+            "Size": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Size', ``, 'string') }}",
+            "Color": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Color', ``, 'string') }}",
+            "Season": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Season', ``, 'string') }}",
+            "MRP (₹)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('MRP____', ``, 'string') }}",
+            "Discount (%)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Discount____', ``, 'string') }}",
+            "Net Selling Price (₹)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Net_Selling_Price____', ``, 'string') }}",
+            "Quantity": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Quantity', ``, 'string') }}",
+            "Total Order Value (₹)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Total_Order_Value____', ``, 'string') }}",
+            "Courier/Logistics Partner": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Courier_Logistics_Partner', ``, 'string') }}",
+            "AWB / Tracking Number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('AWB___Tracking_Number', ``, 'string') }}",
+            "Warehouse / DC": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Warehouse___DC', ``, 'string') }}",
+            "Return/Exchange": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_Exchange', ``, 'string') }}",
+            "Return Reason": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_Reason', ``, 'string') }}",
+            "Refund Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Refund_Status', ``, 'string') }}",
+            "Remarks": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Remarks', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Order ID"
+          ],
+          "schema": [
+            {
+              "id": "Order ID",
+              "displayName": "Order ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Brand",
+              "displayName": "Brand",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sub Brand/Line",
+              "displayName": "Sub Brand/Line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Channel (Online/Offline)",
+              "displayName": "Channel (Online/Offline)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Store Type (EBO/LFS/MBO/E-Com)",
+              "displayName": "Store Type (EBO/LFS/MBO/E-Com)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Store Code",
+              "displayName": "Store Code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Store Name",
+              "displayName": "Store Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Region/Zone",
+              "displayName": "Region/Zone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "City",
+              "displayName": "City",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Contact",
+              "displayName": "Customer Contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Order Date",
+              "displayName": "Order Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expected Delivery",
+              "displayName": "Expected Delivery",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Delivery Date",
+              "displayName": "Delivery Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Order Status",
+              "displayName": "Order Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Mode",
+              "displayName": "Payment Mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Status",
+              "displayName": "Payment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Style Code",
+              "displayName": "Style Code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Article Type",
+              "displayName": "Article Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fit",
+              "displayName": "Fit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Size",
+              "displayName": "Size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Color",
+              "displayName": "Color",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Season",
+              "displayName": "Season",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MRP (₹)",
+              "displayName": "MRP (₹)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Discount (%)",
+              "displayName": "Discount (%)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Net Selling Price (₹)",
+              "displayName": "Net Selling Price (₹)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Order Value (₹)",
+              "displayName": "Total Order Value (₹)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Courier/Logistics Partner",
+              "displayName": "Courier/Logistics Partner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AWB / Tracking Number",
+              "displayName": "AWB / Tracking Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Warehouse / DC",
+              "displayName": "Warehouse / DC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Return/Exchange",
+              "displayName": "Return/Exchange",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Return Reason",
+              "displayName": "Return Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Refund Status",
+              "displayName": "Refund Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Remarks",
+              "displayName": "Remarks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        176
+      ],
+      "id": "00e906bc-ab51-400e-afae-29146eb62037",
+      "name": "Append or update row in sheet in Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZfmOCvPNCurxuJ74",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "120b4d3d-6666-42b8-96df-077efaaee7ef",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0cf39e94daabe4f85c384ea1984e35e7e9ebd92da9a4f8213fb64b102ac3480c"
+  },
+  "id": "9JNP7hXWcj7fKw3H",
+  "tags": []
+}

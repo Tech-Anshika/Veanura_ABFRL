@@ -1,0 +1,411 @@
+{
+  "name": "Customer feedback",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Feed back",
+        "formDescription": "Please give feedback about the services",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "feedback about",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Product"
+                  },
+                  {
+                    "option": "Service"
+                  },
+                  {
+                    "option": "Other"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Rating",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "⭐"
+                  },
+                  {
+                    "option": "⭐⭐"
+                  },
+                  {
+                    "option": "⭐⭐⭐"
+                  },
+                  {
+                    "option": "⭐⭐⭐⭐"
+                  },
+                  {
+                    "option": "⭐⭐⭐⭐⭐"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Your feedback",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "How de we get in touch with you",
+              "placeholder": "Enter your email id",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -16,
+        160
+      ],
+      "id": "908217c0-e14d-4d38-b3b9-d6856dda55a3",
+      "name": "On form submission",
+      "webhookId": "e64d402d-aa74-4e1b-9397-16b66a9b4514"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Classify the sentiment in the following  customer feedback: {{ $json['Your feedback'] }}",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        224,
+        -112
+      ],
+      "id": "e46d78d4-0192-4ea5-b125-4803f27c30e4",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        224,
+        16
+      ],
+      "id": "e0ac918a-bd4c-4dbf-9415-3e4dcfb1c608",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bfiKgiiIjbx2Qp8I",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        576,
+        144
+      ],
+      "id": "9bac7753-63f4-4ae2-9aa4-783505d32b21",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json['Your feedback'] }}",
+        "options": {
+          "systemMessage": "=Write a concise email response without a subject line to the submission from the Customer Feedback Form:\nFeedback: {{ $json['Your feedback'] }}\nRating: {{ $json.Rating }}\n\nIf the feedback is positive (rating 4 or 5):\nWrite a short, warm email thanking the customer {{ $json.Name }} for taking the time to share their thoughts and for the high rating. Express genuine appreciation for their support and trust in our product or service.\n\nIf the feedback is negative or neutral (rating 1, 2, or 3):\nWrite a thoughtful, empathetic response thanking the customer {{ $json.Name }} for their honest feedback and rating. Acknowledge their concerns, show sincere interest in understanding their experience, and ask how we can improve our services or products. Include a special offer code for a 20% discount on their next purchase as a goodwill gesture.\n\nAlways close the email with the signature of the Founder and CEO:\n\"Chakshu Arora\"\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        736,
+        -112
+      ],
+      "id": "2e739c67-0740-438f-a2d8-73d854f50b25",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        736,
+        0
+      ],
+      "id": "7843f924-85de-4059-9fc8-b204c181ae95",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bfiKgiiIjbx2Qp8I",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json['How de we get in touch with you'] }}",
+        "subject": "Thanks for sharing your valuable feedback",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1088,
+        -112
+      ],
+      "id": "22b376d9-f6e1-4f96-8078-9f8cccb2f7ad",
+      "name": "Send a message",
+      "webhookId": "63be88d1-92ce-4c24-bca2-ed29c69c79f9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YFKPBquSP3d5Cufw",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "19VfZf5wC6I2PGxLlqcYh7lwpggOII5iQV2kxcDGUvlM",
+          "mode": "list",
+          "cachedResultName": "Customer Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19VfZf5wC6I2PGxLlqcYh7lwpggOII5iQV2kxcDGUvlM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19VfZf5wC6I2PGxLlqcYh7lwpggOII5iQV2kxcDGUvlM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.submittedAt }}",
+            "Category": "={{ $json['feedback about'] }}",
+            "Rating": "={{ $json.Rating }}",
+            "Customer Feedback": "={{ $json['Your feedback'] }}",
+            "Customer Name": "={{ $json.Name }}",
+            "Customer Contact": "={{ $json['How de we get in touch with you'] }}",
+            "Entered By": "Form",
+            "Sentiment": "={{ $json.text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Feedback",
+              "displayName": "Customer Feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Contact",
+              "displayName": "Customer Contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Entered By",
+              "displayName": "Entered By",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        784,
+        144
+      ],
+      "id": "7b5836e7-8d77-4198-a224-8fcfa3a9452c",
+      "name": "Feedback",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mLXVRU7QzmTNKqIK",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Feedback",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d09b6816-7456-464d-a58c-2f4d893bc348",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4a4c7ade4731581e91ed5704863ef2fd4924654db32d7237b4fc78654b5445b6"
+  },
+  "id": "R8zxDqQX1iq3ieQI",
+  "tags": []
+}

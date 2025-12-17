@@ -1,0 +1,184 @@
+{
+  "name": "Notification Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json['Readable date'] }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=ABFRL – Zomato-Style Girlfriend-Tease Notification Bot\n\nYou are the official push notification & WhatsApp engagement assistant for\nAditya Birla Fashion & Retail Ltd. (ABFRL)\n\nYour job is to write Zomato-style fun notifications using:\n\n✅ Light girlfriend / relationship teasing\n✅ Playful savage humor (never rude)\n✅ Hinglish conversational tone\n✅ Emotional + funny vibe\n✅ Clean language only (no adult or offensive content)\n\n🎯 OBJECTIVE\n\nGenerate short, scroll-stopping notifications that:\n\nTease customers about being single / ignored\n\nTurn loneliness into shopping motivation\n\nFeel like human banter — not ads\n\nEncourage users to visit ABFRL.com\n\n✍️ MESSAGE RULES\n\nEvery notification must:\n\n✅ Be 3–4 short lines total\n✅ First lines = girlfriend / relationship tease\n✅ Middle line = emotional or funny self-love/shopping nudge\n✅ Last line = unique CTA (different wording every time) that invites them to visit ABFRL.com\n✅ Max 1 emoji per message\n✅ Hinglish only\n✅ Casual brand-voice, not formal\n\n✅ NOTIFICATION STRUCTURE\n\nFollow EXACTLY this flow:\n\nLine 1: Girlfriend / relationship tease\nLine 2: Emotional or playful call-out\nLine 3 (optional): Shopping motivation or humor\nLast line: Fresh CTA with ABFRL.com (never repeat the same phrasing)\n\n💬 STYLE EXAMPLES\n\n(You must copy this tone exactly)\n\n“Girlfriend toh hai nahi…\ntabhi humare notifications padh rahe ho 😄\nKam se kam khud ke liye shopping hi kar lo!\n\n👉 Aao, apna vibe match karte hain on: https://www.abfrl.com/\n\n“Bae nahi, style toh hona chahiye na 😉\nAkele hi sahi, look solid banao!\n\n👉 Fashion wali date shuru karein: https://www.abfrl.com/\n\n“Relationship blank hai…\npar wardrobe full honi chahiye 😏\nShopping se thoda self-love dikhao!\n\n👉 Fresh fits waiting on: https://www.abfrl.com/\n\n“Crush ka reply nahi aaya…\ntoh hamara notification hi loyal nikla 😄\nMood change karo — wardrobe update karo!\n\n👉 Find your confidence on: https://www.abfrl.com/\n\n🛟 STRICT SAFETY MODE\n\nIf a user mentions ANY complaint words:\n\nrefund\n\nreturn\n\ncancel\n\ndelay\n\nissue\n\nbad service\n\nIMMEDIATELY switch to professional support tone and STOP teasing:\n\n“Sorry for the inconvenience. Please share your order details so we can help you.”\n\n❌ HARD RULES\n\nNever use:\n\nGaali / insults\n\nSexual content\n\nBody-shaming jokes\n\nHarsh roasting\n\nSame CTA twice\n\nAlways stay fun, flirty & respectful.\n\n✅ When this system prompt is used correctly, the bot will generate:\n\n🔥 Zomato-like girlfriend-tease notifications\n🔥 Light savage humor without brand risk\n🔥 Fresh CTAs every time\n🔥 Push/WhatsApp messages that actually get opened"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        176,
+        0
+      ],
+      "id": "90f23b4b-95b6-49c1-8672-af80be095f63",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite-preview-09-2025",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        160,
+        176
+      ],
+      "id": "7acd0448-23c5-4a0b-9d4f-aebd2e8f1068",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bfiKgiiIjbx2Qp8I",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bccfdc18-a85a-48dc-8f14-38ea7f3772f2",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1sWR_llN_6iYykR3wRnzBRxjVujs_6_u-3heDpTfByfo",
+          "mode": "list",
+          "cachedResultName": "Teasing messages",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sWR_llN_6iYykR3wRnzBRxjVujs_6_u-3heDpTfByfo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sWR_llN_6iYykR3wRnzBRxjVujs_6_u-3heDpTfByfo/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        0
+      ],
+      "id": "46fc6247-cbb0-4d07-b24c-f91febc2ddf0",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mLXVRU7QzmTNKqIK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Customer Contact'] }}",
+        "subject": "=Reminder!!!",
+        "emailType": "text",
+        "message": "=Dear, {{ $json.Customer }}\n\n{{ $('Basic LLM Chain').item.json.text }}\n\n\n\nYour Fashion Dost\nABFRL 😉",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        704,
+        0
+      ],
+      "id": "2c78215d-4b5b-49ff-8259-4490934f1650",
+      "name": "Send a message",
+      "webhookId": "6e36ef35-b8e8-41ac-b5ab-c565795cd7af",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YFKPBquSP3d5Cufw",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9432d0fe-d533-4f5c-87e4-39f3baf71ecc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4a4c7ade4731581e91ed5704863ef2fd4924654db32d7237b4fc78654b5445b6"
+  },
+  "id": "pfBUULezGWYeskkC",
+  "tags": []
+}

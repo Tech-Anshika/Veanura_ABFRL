@@ -1,0 +1,435 @@
+{
+  "name": "Inventory Management System",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7cfb1003-39a0-4799-9400-6022c7c43e24",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1e7igWjgqs-Xjr7Y50k2QymBnLVvNZL2ZaiMT4eRxgAo",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1e7igWjgqs-Xjr7Y50k2QymBnLVvNZL2ZaiMT4eRxgAo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1e7igWjgqs-Xjr7Y50k2QymBnLVvNZL2ZaiMT4eRxgAo/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        0
+      ],
+      "id": "4364908c-409e-4140-8a58-4bb1aaab7fcb",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mLXVRU7QzmTNKqIK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -96
+      ],
+      "id": "ec18082c-e757-4234-9b21-12ff2c0a7508",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "adb002ed-0347-413c-bbe4-0fd42240da0c",
+              "leftValue": "={{ $json['Stock Qty'] }}",
+              "rightValue": "={{ $json['Reorder Level'] }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        0
+      ],
+      "id": "086be2bd-548f-4983-89d3-66617c75ea27",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "options": {
+          "systemMessage": "=You are an inventory assistant.\n\nHere is a list of products with their stock levels and reorder thresholds.\n\nYour job is to:\n1. Identify products where the stock quantity is below the reorder level.\n2. Format a clear summary of the low-stock items.\n3. Mention the supplier for each item so a reorder decision can be made.\n\nExample output:\n- *Wireless Mouse* (SKU: PROD001) has 10 units left (reorder level: 20).\n  Supplier: Tech Supplies Ltd.\n- *Webcam 1080p* (SKU: PROD005) has 8 units left (reorder level: 10).\n  Supplier: CamTech Solutions.\n\nOnly include products that are below their reorder level.\n\nCurrent time: {{ $now }}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        848,
+        -96
+      ],
+      "id": "6f8af76f-e55b-4536-9711-c4e39892b805",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        208
+      ],
+      "id": "544f2b3b-4903-4495-a1c5-fe5fa1b4d2e0",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "olRKXgRYQUUnuvSb",
+          "name": "Google Gemini(PaLM) Api account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "chakshuarora860@gmail.com",
+        "subject": "Low Stock Detected",
+        "message": "=Hi,\n{{ $json.output }}\nShould I proceed with restocking agent\n\nRegards,\nABFRL",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1200,
+        -96
+      ],
+      "id": "6bd8456e-9623-491a-9aab-1ba1c9014c1f",
+      "name": "Send message and wait for response",
+      "webhookId": "4274c0ac-f691-4475-b8ed-a0584a161fdb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YFKPBquSP3d5Cufw",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0c622d58-a64d-4e17-9e7f-c20fc54745ed",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        -96
+      ],
+      "id": "0fa94b55-2de0-40f0-be5e-8d3a924b227d",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1e7igWjgqs-Xjr7Y50k2QymBnLVvNZL2ZaiMT4eRxgAo",
+          "mode": "list",
+          "cachedResultName": "Inventory Management",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1e7igWjgqs-Xjr7Y50k2QymBnLVvNZL2ZaiMT4eRxgAo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 836076228,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1e7igWjgqs-Xjr7Y50k2QymBnLVvNZL2ZaiMT4eRxgAo/edit#gid=836076228"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1616,
+        -112
+      ],
+      "id": "c43c76b3-1da1-4bab-a51d-8d8e1c54e518",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mLXVRU7QzmTNKqIK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        -112
+      ],
+      "id": "05bedb37-d445-4efc-b404-db26c7c06d7f",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Supplier Contact list: {{ $json.data.toJsonString() }}\nItems that need to be restocked: {{ $('AI Agent').item.json.output }}\n",
+        "options": {
+          "systemMessage": "=You are a purchasing assistant for an e-commerce store.\n\nYou will receive a list of products that are low in stock. For each product, generate a polite and professional email to the product’s supplier requesting a restock.\n\nYour goal is to:\n1. Mention the product name and SKU\n2. State the current quantity and reorder level\n3. Request a restock of the item (assume we want 100 units unless otherwise specified)\n4. Include the contact person's name if available\n5. Keep the tone friendly and professional\n\nEmail Format (for each supplier):\n---\n**To:** [Supplier Email]\n**Subject:** Reorder Request for [Product Name]\n\n**Body:**\nHi [Contact Name],\n\nI hope you're well. We're reaching out to place a reorder for **[Product Name] (SKU: [SKU])**.\n\nWe're currently down to **[Stock Quantity] units**, below our reorder threshold of **[Reorder Level]**.\n\nPlease let us know if you can fulfill **100 units** at your earliest convenience.\n\nThank you,  \nAI Inventory Assistant\n---\n\nOnly generate emails for products that are below the reorder level.  \nAlways write emails in HTML format.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2032,
+        -112
+      ],
+      "id": "bdc814e7-74c1-4ce1-8835-cbba32753640",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        2192,
+        96
+      ],
+      "id": "e315c996-aeba-48bb-8b71-31d7a5677707",
+      "name": "Send a message in Gmail",
+      "webhookId": "4dfb7e80-6a45-4af0-abea-9d8c8e2ae76e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YFKPBquSP3d5Cufw",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        []
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "11951b59-66ca-4599-bba6-54c7be7a33f8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4a4c7ade4731581e91ed5704863ef2fd4924654db32d7237b4fc78654b5445b6"
+  },
+  "id": "Ub3JFeGu20Id48pA",
+  "tags": []
+}
